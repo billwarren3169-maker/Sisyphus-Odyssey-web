@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sisyphus Odyssey - Interactive Portfolio</title>
+    <style>
+        /* 基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background-color: #1a1a1a;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+        
+        /* 电影级背景层 */
+        .cinematic-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background-image: url('./base.jpg');
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            z-index: -1;
+            transition: all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        /* 柔和遮罩层 */
+        .soft-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, 
+                rgba(26, 26, 26, 0.6) 0%, 
+                rgba(26, 26, 26, 0.4) 50%, 
+                rgba(26, 26, 26, 0.6) 100%);
+            z-index: -1;
+        }
+        
+        /* 文字颜色 */
+        .text-ivory {
+            color: #F5F5F0;
+        }
+        
+        .text-khaki {
+            color: #D2B48C;
+        }
+        
+        /* 区块基础样式 */
+        .section {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4rem;
+            position: relative;
+        }
+        
+        /* 内容容器 */
+        .section-container {
+            max-width: 1200px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 3rem;
+        }
+        
+        /* 左侧信息区 */
+        .info-area {
+            flex: 0 0 40%;
+            max-width: 480px;
+        }
+        
+        /* 右侧交互区 */
+        .interaction-area {
+            flex: 0 0 45%;
+            max-width: 540px;
+        }
+        
+        /* Linear 极简结构 */
+        .content-linear {
+            text-align: left;
+        }
+        
+        /* 首页姓名区域 */
+        .name-area {
+            margin-bottom: 3rem;
+        }
+        
+        .main-name {
+            font-size: 5rem;
+            font-weight: 300;
+            color: #F5F5F0;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+        }
+        
+        /* 高度总结区域 */
+        .summary-area {
+            margin-bottom: 3rem;
+        }
+        
+        .summary-text {
+            font-size: 1.4rem;
+            line-height: 1.8;
+            color: #D2B48C;
+            font-weight: 300;
+            max-width: 700px;
+        }
+        
+        /* TOC 导航区域 */
+        .toc-navigation {
+            position: absolute;
+            right: 8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 50;
+        }
+        
+        .toc-item {
+            display: block;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1rem;
+            color: #F5F5F0;
+            text-decoration: none;
+            font-size: 1.1rem;
+            letter-spacing: 0.05em;
+            border-left: 3px solid transparent;
+            transition: all 0.3s ease;
+            background: rgba(40, 40, 40, 0.2);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            text-align: right;
+        }
+        
+        .toc-item:hover {
+            border-left-color: #D2B48C;
+            background: rgba(40, 40, 40, 0.4);
+            transform: translateX(-5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .toc-item.active {
+            border-left-color: #F5F5F0;
+            background: rgba(60, 60, 60, 0.3);
+        }
+        
+        /* 标题样式 */
+        .section-title {
+            font-size: 4rem;
+            font-weight: 300;
+            color: #F5F5F0;
+            margin-bottom: 2rem;
+            letter-spacing: 0.05em;
+        }
+        
+        /* 段落样式 */
+        .section-text {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            color: #D2B48C;
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+        
+        /* 折叠面板容器 */
+        .accordion-container {
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            border: none !important;
+            border-radius: 0 !important;
+            padding: 1.5rem;
+            z-index: 999;
+            position: relative;
+            box-shadow: none !important;
+        }
+        
+        /* 折叠项 */
+        .accordion-item {
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(245, 245, 240, 0.2);
+            padding-bottom: 1rem;
+        }
+        
+        .accordion-item:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        
+        /* 折叠触发器 */
+        .accordion-trigger {
+            width: 100%;
+            background: transparent !important;
+            border: none !important;
+            text-align: left;
+            padding: 1rem;
+            color: #F5F5F0;
+            font-size: 1rem;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 0 !important;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+        }
+        
+        .accordion-trigger::before {
+            content: '+';
+            position: absolute;
+            right: 1rem;
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+        }
+        
+        .accordion-trigger:hover {
+            color: #ffffff !important;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8) !important;
+        }
+        
+        .accordion-trigger.active::before {
+            transform: rotate(45deg);
+        }
+        
+        /* 折叠内容 */
+        .accordion-content {
+            height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            color: #D2B48C;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            padding: 0 1rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+        }
+        
+        .accordion-content.active {
+            height: auto;
+            opacity: 1;
+            padding: 1rem;
+        }
+        
+        /* 碑文面板 */
+        .tablet-panel {
+            position: fixed;
+            top: 50%;
+            right: -600px;
+            transform: translateY(-50%);
+            width: 500px;
+            max-width: 90vw;
+            background: rgba(20, 20, 20, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(160, 140, 100, 0.4);
+            border-radius: 16px;
+            padding: 2.5rem;
+            transition: right 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            z-index: 1000;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(245, 245, 240, 0.1);
+        }
+        
+        .tablet-panel.active {
+            right: 2rem;
+        }
+        
+        .tablet-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: none;
+            border: none;
+            color: #F5F5F0;
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        
+        .tablet-close:hover {
+            opacity: 1;
+            background: rgba(245, 245, 240, 0.1);
+        }
+        
+        .tablet-header {
+            font-size: 1.8rem;
+            color: #F5F5F0;
+            margin-bottom: 1.5rem;
+            font-weight: 400;
+            border-bottom: 1px solid rgba(210, 180, 140, 0.3);
+            padding-bottom: 1rem;
+        }
+        
+        .tablet-content {
+            color: #D2B48C;
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+        }
+        
+        .tablet-link {
+            display: inline-block;
+            color: #F5F5F0;
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 0.8rem 1.5rem;
+            border: 1px solid rgba(245, 245, 240, 0.3);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            margin-right: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .tablet-link:hover {
+            background: rgba(245, 245, 240, 0.1);
+            border-color: rgba(245, 245, 240, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        /* 滚动锁定 */
+        body.scroll-locked {
+            overflow: hidden;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .section {
+                padding: 0 2rem;
+            }
+            
+            .section-container {
+                flex-direction: column;
+                gap: 2rem;
+            }
+            
+            .info-area, .interaction-area {
+                flex: 1 1 auto;
+                max-width: 100%;
+            }
+            
+            .toc-navigation {
+                right: 2rem;
+            }
+            
+            .main-name {
+                font-size: 4rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .section {
+                padding: 0 1.5rem;
+            }
+            
+            .section-container {
+                gap: 1.5rem;
+            }
+            
+            .toc-navigation {
+                position: static;
+                transform: none;
+                margin-top: 2rem;
+                display: flex;
+                justify-content: center;
+                gap: 0.5rem;
+            }
+            
+            .toc-item {
+                text-align: center;
+                border-left: none;
+                border-bottom: 3px solid transparent;
+                padding: 0.6rem 0.8rem;
+                font-size: 0.8rem;
+            }
+            
+            .toc-item:hover {
+                transform: translateY(-2px);
+            }
+            
+            .main-name {
+                font-size: 3rem;
+            }
+            
+            .section-title {
+                font-size: 2.5rem;
+            }
+            
+            .accordion-container {
+                padding: 1rem;
+            }
+            
+            .accordion-trigger {
+                padding: 0.8rem;
+                font-size: 0.9rem;
+            }
+            
+            .accordion-content {
+                font-size: 0.85rem;
+            }
+        }
+        
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(245, 245, 240, 0.05);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(210, 180, 140, 0.3);
+            border-radius: 2px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(210, 180, 140, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <!-- 电影级背景层 -->
+    <div class="cinematic-bg" id="cinematicBg"></div>
+    <div class="soft-overlay"></div>
+    
+        
+    <!-- 主要内容 -->
+    <main>
+        <!-- Section 1: 启程 -->
+        <section class="section" id="section1" data-section="1">
+            <div class="section-container">
+                <div class="info-area">
+                    <div class="content-linear">
+                        <!-- 姓名区 -->
+                        <div class="name-area">
+                            <h1 class="main-name">Betty</h1>
+                        </div>
+                        
+                        <!-- 高度总结区 -->
+                        <div class="summary-area">
+                            <p class="summary-text">
+                                以产业经济学的结构化框架为底座，于 AI 浪潮中寻求重生的敏捷产品构建者。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- TOC 导航区 -->
+                <nav class="toc-navigation">
+                    <a href="#section2" class="toc-item" data-section="2">攀登</a>
+                    <a href="#section3" class="toc-item" data-section="3">登顶</a>
+                    <a href="#section4" class="toc-item" data-section="4">坠落</a>
+                    <a href="#section5" class="toc-item" data-section="5">重生</a>
+                </nav>
+            </div>
+        </section>
+        
+        <!-- Section 2: 攀登 - 规训与执行 -->
+        <section class="section" id="section2" data-section="2">
+            <div class="section-container">
+                <div class="info-area">
+                    <div class="content-linear">
+                        <h2 class="section-title">攀登</h2>
+                        <p class="section-text">
+                            初识真实世界的运行逻辑。通过大型活动统筹与商业竞赛，积淀最原始的执行力与项目落地推力，凝望着看似不可逾越的高度，心中既有敬畏，也有不屈的决心。
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="interaction-area">
+                    <div class="accordion-container">
+                        <div class="accordion-item">
+                            <button class="accordion-trigger" data-accordion="activities">
+                                大型活动统筹
+                            </button>
+                            <div class="accordion-content" id="accordion-activities">
+                                担任校学生会负责人。统筹策划多项校级大型活动，从零到一搭建标准作业程序，锻炼极强的跨部门沟通与项目落地执行力。
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <button class="accordion-trigger" data-accordion="mvp">
+                                MVP 商业构建
+                            </button>
+                            <div class="accordion-content" id="accordion-mvp">
+                                参与互联网+创新创业大赛。主导商业计划书撰写与早期 MVP 商业模式构架，完成从创意到商业逻辑的初步闭环，成功落地完成商业化实施。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Section 3: 登顶 - 业务与数据底座 -->
+        <section class="section" id="section3" data-section="3">
+            <div class="section-container">
+                <div class="info-area">
+                    <div class="content-linear">
+                        <h3 class="section-title">登顶</h3>
+                        <p class="section-text">
+                            产业经济学不是终点，而是我透视复杂商业系统的底层逻辑，站在山巅，世界在脚下展开。
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="interaction-area">
+                    <div class="accordion-container">
+                        <div class="accordion-item">
+                            <button class="accordion-trigger" data-accordion="business">
+                                复杂业务流穿透
+                            </button>
+                            <div class="accordion-content" id="accordion-business">
+                                在审计与券商的实务中，培养了极强的商业流程排查能力，敏锐识别传统工作流中的效率瓶颈，为后续 B 端 AI 效率工具的场景挖掘建立直觉。
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <button class="accordion-trigger" data-accordion="economics">
+                                产业经济与量化
+                            </button>
+                            <div class="accordion-content" id="accordion-economics">
+                                运用 SCP 范式自上而下拆解平台商业模式边界；通过 Python 与 Stata 建立数据清洗与回归分析的自动化 SOP，将理论转化为严谨的量化实证。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Section 4: 坠落 - AI 原生构建 -->
+        <section class="section" id="section4" data-section="4">
+            <div class="section-container">
+                <div class="info-area">
+                    <div class="content-linear">
+                        <h4 class="section-title">坠落</h4>
+                        <p class="section-text">
+                            学术路径与产品目标的错位，命运的巨石再次滚落，带着势不可挡的力量回到原点。利用大模型进行独立思考与敏捷开发，完成从 PRD 到交互原型的全栈闭环。这不是失败，而是循环的开始。
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="interaction-area">
+                    <div class="accordion-container">
+                        <div class="accordion-item">
+                            <button class="accordion-trigger" data-accordion="agent">
+                                Agent 架构与业务流转
+                            </button>
+                            <div class="accordion-content" id="accordion-agent">
+                                设计内省工具「悉达多之河」，深入实践复杂 Prompt 架构。基于 DeepSeek API 独立开发「Cyber Kitten」桌面应用，完成本地端联调，实现跨应用的上下文状态感知。
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <button class="accordion-trigger" data-accordion="interactive">
+                                生成式交互落地
+                            </button>
+                            <div class="accordion-content" id="accordion-interactive">
+                                开发「指尖森林」。独立主导视觉规范设定，通过 Vibe Coding完成 Canvas 引擎的交互逻辑开发，探明大模型在实际代码工程中的边界。
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <button class="accordion-trigger" data-accordion="sop">
+                                商业验证：SOP 矩阵
+                            </button>
+                            <div class="accordion-content" id="accordion-sop">
+                                运营「AI与经济研究」账号矩阵。将提效工具封装为标准化工作流，直接面向真实用户进行产品化输出与反馈迭代，建立最小商业闭环。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Section 5: 重生 - 未来展望 -->
+        <section class="section" id="section5" data-section="5">
+            <div class="section-container">
+                <div class="info-area">
+                    <div class="content-linear">
+                        <h5 class="section-title">重生</h5>
+                        <p class="section-text">
+                            推翻重来，是为了更纯粹的攀登。期待一起创造出更多可能！
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="interaction-area">
+                    <!-- 交互区域已清空 -->
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <script>
+        // 电影级镜头切换效果
+        document.addEventListener('DOMContentLoaded', function() {
+            const cinematicBg = document.getElementById('cinematicBg');
+            const sections = document.querySelectorAll('.section');
+            
+            // 各区块的镜头参数
+            const cinematicShots = {
+                1: {
+                    size: 'cover',
+                    position: 'center center'
+                },
+                2: {
+                    size: '200%',
+                    position: '65% 55%'
+                },
+                3: {
+                    size: '250%',
+                    position: '40% 70%'
+                },
+                4: {
+                    size: '300%',
+                    position: '50% 100%'
+                },
+                5: {
+                    size: '120%',
+                    position: 'center top'
+                }
+            };
+            
+            let currentSection = 1;
+            
+            // 检测当前可见区块
+            function getCurrentSection() {
+                const scrollY = window.scrollY;
+                const windowHeight = window.innerHeight;
+                
+                for (let i = 0; i < sections.length; i++) {
+                    const section = sections[i];
+                    const sectionTop = section.offsetTop;
+                    const sectionBottom = sectionTop + windowHeight;
+                    
+                    if (scrollY >= sectionTop - windowHeight / 2 && scrollY < sectionBottom - windowHeight / 2) {
+                        return i + 1;
+                    }
+                }
+                
+                return 1;
+            }
+            
+            // 更新背景镜头
+            function updateCinematicShot() {
+                const newSection = getCurrentSection();
+                
+                if (newSection !== currentSection) {
+                    currentSection = newSection;
+                    const shot = cinematicShots[currentSection];
+                    
+                    if (shot) {
+                        cinematicBg.style.backgroundSize = shot.size;
+                        cinematicBg.style.backgroundPosition = shot.position;
+                    }
+                }
+            }
+            
+            // 折叠面板功能
+            function initAccordion() {
+                const triggers = document.querySelectorAll('.accordion-trigger');
+                
+                triggers.forEach(trigger => {
+                    trigger.addEventListener('click', function() {
+                        const accordionId = this.getAttribute('data-accordion');
+                        const content = document.getElementById('accordion-' + accordionId);
+                        const allTriggers = document.querySelectorAll('.accordion-trigger');
+                        const allContents = document.querySelectorAll('.accordion-content');
+                        
+                        // 关闭其他所有面板
+                        allTriggers.forEach(t => {
+                            if (t !== this) {
+                                t.classList.remove('active');
+                            }
+                        });
+                        
+                        allContents.forEach(c => {
+                            if (c !== content) {
+                                c.classList.remove('active');
+                            }
+                        });
+                        
+                        // 切换当前面板
+                        this.classList.toggle('active');
+                        content.classList.toggle('active');
+                    });
+                });
+            }
+            
+            // TOC 导航功能
+            function initTOCNavigation() {
+                const tocItems = document.querySelectorAll('.toc-item');
+                
+                tocItems.forEach(item => {
+                    item.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        
+                        const targetSection = this.getAttribute('data-section');
+                        const targetElement = document.getElementById('section' + targetSection);
+                        
+                        if (targetElement) {
+                            targetElement.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    });
+                });
+            }
+            
+            // 更新TOC激活状态
+            function updateTOCActiveState() {
+                const tocItems = document.querySelectorAll('.toc-item');
+                const currentSectionNum = getCurrentSection();
+                
+                tocItems.forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('data-section') == currentSectionNum) {
+                        item.classList.add('active');
+                    }
+                });
+            }
+            
+            // 滚动事件监听
+            window.addEventListener('scroll', function() {
+                updateCinematicShot();
+                updateTOCActiveState();
+            });
+            
+            // 初始化
+            updateCinematicShot();
+            initAccordion();
+            initTOCNavigation();
+            updateTOCActiveState();
+        });
+    </script>
+</body>
+</html>
