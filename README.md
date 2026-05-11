@@ -46,7 +46,7 @@
 
 1.  **克隆仓库**：
     ```bash
-    git clone 
+    git clone [https://github.com/billwarren3169-maker/Sisyphus-Odyssey-web.git](https://github.com/billwarren3169-maker/Sisyphus-Odyssey-web.git)
     ```
 2.  **环境要求**：
     * 无需任何构建步骤。
