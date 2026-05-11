@@ -1,3 +1,9 @@
+<img width="2731" height="1417" alt="base" src="https://github.com/user-attachments/assets/e51bec65-bd46-4971-b6a2-f0546c939705" />
+<p align="center">
+  <a href="https://billwarren3169-maker.github.io/Sisyphus-Odyssey-web/">
+    <img src="https://github.com/user-attachments/assets/e51bec65-bd46-4971-b6a2-f0546c939705" alt="Sisyphus Odyssey Banner" width="100%">
+  </a>
+</p>
 # Sisyphus-Odyssey-web
 
 > **“推石上山的过程本身，就足以充实人的心灵。”**
